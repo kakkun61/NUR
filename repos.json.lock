@@ -582,8 +582,8 @@
             "url": "https://github.com/ChrisOboe/nurrepo"
         },
         "chrjabs": {
-            "rev": "0123914f3b437a6d2a3147ac1bc91037c3c69a39",
-            "sha256": "0412pn649i0l4v60kglmc4nyzwrvcyw6rw28sqiddgphx8l19y6b",
+            "rev": "1a3e5b094937d3d5be4a9b12597ca339454038bb",
+            "sha256": "05z6r9ddfv5x2g7866v61dwxhn2s87j18cfv6l4c5w3k1ls74dnh",
             "url": "https://github.com/chrjabs/nur-packages"
         },
         "cinqwqeggs": {
@@ -617,8 +617,8 @@
             "url": "https://github.com/TheColorman/nurpkgs"
         },
         "congee": {
-            "rev": "746a16b0aa82c892dc64a6af597548d93a0a52e9",
-            "sha256": "0ppb08xrd577lcn2qyw4y6zgkvl68xi5qxyqmi2i8lnzfixmv3xp",
+            "rev": "f8441c44686e8ebc1c7abeb22715b3822481f504",
+            "sha256": "0vraa2m94i8azaz3h3y0v299bzvaabwz0izhb2n05gbsycj7jm7d",
             "url": "https://github.com/congee/nur"
         },
         "cransom": {
