@@ -20,6 +20,33 @@
           pkgs = prev;
         };
       };
+
+      lockedRevisions = (builtins.fromJSON (builtins.readFile ./repos.json.lock)).repos;
+      repoSource =
+        name: attr:
+        import ./lib/repoSource.nix {
+          inherit
+            name
+            attr
+            manifest
+            lockedRevisions
+            lib
+            ;
+          fetchgit = builtins.fetchGit or lib.id;
+          fetchzip = builtins.fetchTarball or lib.id;
+        };
+      # Lazily evaluate each repo with pkgs = null; the result is only forced
+      # when a specific repo's attribute is accessed.
+      repos = lib.mapAttrs (
+        name: attr:
+        import ./lib/evalRepo.nix {
+          inherit name lib;
+          inherit (attr) url;
+          src = repoSource name attr + ("/" + (attr.file or ""));
+          pkgs = null;
+        }
+      ) manifest;
+      collectModules = attrName: lib.mapAttrs (name: _: repos.${name}.${attrName} or { }) manifest;
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = builtins.filter (
@@ -62,5 +89,19 @@
           # This trick with the overlay is used because it allows NUR packages to depend on other NUR packages
           legacyPackages = (pkgs.extend overlay).nur;
         };
+    }
+    // {
+      # Expose modules from individual NUR repos as standard flake outputs.
+      # Merged outside flake-parts to avoid deferredModule type wrapping.
+      nixosModules.repos = lib.mapAttrs (
+        name: _:
+        let
+          r = repos.${name};
+        in
+        r.nixosModules or r.modules or { }
+      ) manifest;
+      homeModules.repos = collectModules "homeModules";
+      darwinModules.repos = collectModules "darwinModules";
+      flakeModules.repos = collectModules "flakeModules";
     };
 }
