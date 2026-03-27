@@ -164,8 +164,8 @@ Using overlays and modules from NUR in your configuration is fairly straightforw
       modules = [
         # Adds the NUR overlay
         nur.modules.nixos.default
-        # NUR modules can be imported directly via nixosModules:
-        nur.nixosModules.repos.iopq.xraya
+        # NUR modules can be imported directly:
+        nur.repos.iopq.modules.nixos.xraya
         # Or via legacyPackages (legacy path):
         # nur.legacyPackages."${system}".repos.iopq.modules.xraya
         # This adds the NUR nixpkgs overlay.
@@ -189,7 +189,7 @@ When using flakes, Home Manager modules can be accessed directly:
 ```nix
 # In your Home Manager configuration
 {
-  imports = lib.attrValues nur.homeModules.repos.moredhel;
+  imports = lib.attrValues nur.repos.moredhel.modules.homeManager;
 
   services.unison = {
     enable = true;
@@ -435,7 +435,7 @@ NixOS modules should be placed in the `nixosModules` attribute:
 }
 ```
 
-These modules are then accessible as `nur.nixosModules.repos.<repo>.<module>` in flakes.
+These modules are then accessible as `nur.repos.<repo>.modules.nixos.<module>` in flakes.
 
 The legacy `modules` attribute is also supported as a fallback for `nixosModules`.
 
@@ -452,7 +452,7 @@ Home Manager modules should be placed in the `homeModules` attribute:
 }
 ```
 
-These modules are then accessible as `nur.homeModules.repos.<repo>.<module>` in flakes.
+These modules are then accessible as `nur.repos.<repo>.modules.homeManager.<module>` in flakes.
 
 #### Providing Darwin modules
 
@@ -464,7 +464,7 @@ Darwin (nix-darwin) modules should be placed in the `darwinModules` attribute:
 }
 ```
 
-These modules are then accessible as `nur.darwinModules.repos.<repo>.<module>` in flakes.
+These modules are then accessible as `nur.repos.<repo>.modules.darwin.<module>` in flakes.
 
 #### Providing flake-parts modules
 
@@ -476,7 +476,7 @@ Flake-parts modules should be placed in the `flakeModules` attribute:
 }
 ```
 
-These modules are then accessible as `nur.flakeModules.repos.<repo>.<module>` in flakes.
+These modules are then accessible as `nur.repos.<repo>.modules.flake.<module>` in flakes.
 
 #### Providing Overlays
 

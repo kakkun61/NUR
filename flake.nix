@@ -46,7 +46,6 @@
           pkgs = null;
         }
       ) manifest;
-      collectModules = attrName: lib.mapAttrs (name: _: repos.${name}.${attrName} or { }) manifest;
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = builtins.filter (
@@ -61,6 +60,21 @@
             nixpkgs.overlays = [ overlay ];
           };
         });
+        repos = lib.mapAttrs (
+          name: _:
+          let
+            r = repos.${name};
+          in
+          {
+            modules = {
+              nixos = r.nixosModules or r.modules or { };
+              homeManager = r.homeModules or { };
+              darwin = r.darwinModules or { };
+              flake = r.flakeModules or { };
+            };
+            overlays = r.overlays or { };
+          }
+        ) manifest;
       };
       imports = [
         inputs.flake-parts.flakeModules.modules
@@ -89,19 +103,5 @@
           # This trick with the overlay is used because it allows NUR packages to depend on other NUR packages
           legacyPackages = (pkgs.extend overlay).nur;
         };
-    }
-    // {
-      # Expose modules from individual NUR repos as standard flake outputs.
-      # Merged outside flake-parts to avoid deferredModule type wrapping.
-      nixosModules.repos = lib.mapAttrs (
-        name: _:
-        let
-          r = repos.${name};
-        in
-        r.nixosModules or r.modules or { }
-      ) manifest;
-      homeModules.repos = collectModules "homeModules";
-      darwinModules.repos = collectModules "darwinModules";
-      flakeModules.repos = collectModules "flakeModules";
     };
 }
