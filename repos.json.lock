@@ -2100,8 +2100,8 @@
             "url": "https://github.com/ryan4yin/nur-packages"
         },
         "rycee": {
-            "rev": "6dd173bedf338d5632aa4dfec2595ce299a35645",
-            "sha256": "1z36fbsvrj1mjgl6cv04kmdvx3lad1lkk8n1qdy0kj4fdvrdsg3q",
+            "rev": "9e84571429d01fc3971f05ee3daa3316516b460f",
+            "sha256": "0rpqidca0p000dxc78l1swbyr2ryb3afm4dc04f2ii9n89rkj3yy",
             "url": "https://gitlab.com/rycee/nur-expressions"
         },
         "ryota2357": {
