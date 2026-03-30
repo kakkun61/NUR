@@ -20,6 +20,32 @@
           pkgs = prev;
         };
       };
+
+      lockedRevisions = (builtins.fromJSON (builtins.readFile ./repos.json.lock)).repos;
+      repoSource =
+        name: attr:
+        import ./lib/repoSource.nix {
+          inherit
+            name
+            attr
+            manifest
+            lockedRevisions
+            lib
+            ;
+          fetchgit = builtins.fetchGit or lib.id;
+          fetchzip = builtins.fetchTarball or lib.id;
+        };
+      # Lazily evaluate each repo with pkgs = null; the result is only forced
+      # when a specific repo's attribute is accessed.
+      repos = lib.mapAttrs (
+        name: attr:
+        import ./lib/evalRepo.nix {
+          inherit name lib;
+          inherit (attr) url;
+          src = repoSource name attr + ("/" + (attr.file or ""));
+          pkgs = null;
+        }
+      ) manifest;
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = builtins.filter (
@@ -34,6 +60,21 @@
             nixpkgs.overlays = [ overlay ];
           };
         });
+        repos = lib.mapAttrs (
+          name: _:
+          let
+            r = repos.${name};
+          in
+          {
+            modules = {
+              nixos = r.nixosModules or r.modules or { };
+              homeManager = r.homeModules or { };
+              darwin = r.darwinModules or { };
+              flake = r.flakeModules or { };
+            };
+            overlays = r.overlays or { };
+          }
+        ) manifest;
       };
       imports = [
         inputs.flake-parts.flakeModules.modules
