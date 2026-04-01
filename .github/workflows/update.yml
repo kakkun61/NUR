@@ -16,8 +16,19 @@ jobs:
     # Don't trigger when the last push was done by a bot
     if: github.event_name != 'push' || !endsWith(github.actor, '[bot]')
     steps:
+    - id: check_app_secrets
+      run: |
+        if [ -n "$APP_ID" ] && [ -n "$APP_KEY" ]; then
+          echo "available=true" >> $GITHUB_OUTPUT
+        else
+          echo "available=false" >> $GITHUB_OUTPUT
+        fi
+      env:
+        APP_ID: ${{ secrets.GH_APPLICATION_ID }}
+        APP_KEY: ${{ secrets.GH_APPLICATION_PRIVATE_KEY }}
     - id: get_workflow_token
       uses: peter-murray/workflow-application-token-action@v4.0.1
+      if: steps.check_app_secrets.outputs.available == 'true'
       with:
         application_id: '${{ secrets.GH_APPLICATION_ID }}'
         application_private_key: '${{ secrets.GH_APPLICATION_PRIVATE_KEY }}'
@@ -32,25 +43,27 @@ jobs:
     - name: update nur / nur-combined
       run: ./ci/update-nur.sh
       env:
-        API_TOKEN_GITHUB: '${{ steps.get_workflow_token.outputs.token }}'
+        API_TOKEN_GITHUB: '${{ steps.get_workflow_token.outputs.token || github.token }}'
     - name: rebase # TODO: fix upstream push-protected to retry when push fails
       run: |
         source ./ci/lib/setup-git.sh
         git fetch origin ${{ github.event.repository.default_branch }}
         git pull --rebase origin ${{ github.event.repository.default_branch }}
       env:
-        GITHUB_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
+        GITHUB_TOKEN: ${{ steps.get_workflow_token.outputs.token || github.token }}
     - uses: CasperWA/push-protected@v2
       with:
-        token: ${{ steps.get_workflow_token.outputs.token }}
+        token: ${{ steps.get_workflow_token.outputs.token || github.token }}
         branch: ${{ github.event.repository.default_branch }}
     - name: Dispatch NUR-combined update
+      if: steps.get_workflow_token.outcome == 'success'
       uses: peter-evans/repository-dispatch@v3
       with:
         token: ${{ steps.get_workflow_token.outputs.token }}
         repository: nix-community/nur-combined
         event-type: nur_update
     - name: Dispatch NUR-search update
+      if: steps.get_workflow_token.outcome == 'success'
       uses: peter-evans/repository-dispatch@v3
       with:
         token: ${{ steps.get_workflow_token.outputs.token }}
